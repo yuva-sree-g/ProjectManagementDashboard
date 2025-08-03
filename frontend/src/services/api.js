@@ -1,9 +1,8 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
+// Create axios instance with base configuration
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -38,21 +37,11 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  login: (credentials) => {
-    // Convert to URL-encoded form data for OAuth2PasswordRequestForm
-    const formData = new URLSearchParams();
-    formData.append('username', credentials.username);
-    formData.append('password', credentials.password);
-    return api.post('/auth/login', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
-  },
+  login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
 };
 
-// Projects API
+// Project API
 export const projectsAPI = {
   getAll: (params) => api.get('/projects', { params }),
   getById: (id) => api.get(`/projects/${id}`),
@@ -61,29 +50,29 @@ export const projectsAPI = {
   delete: (id) => api.delete(`/projects/${id}`),
 };
 
-// Tasks API
+// Task API
 export const tasksAPI = {
   getAll: (params) => api.get('/tasks', { params }),
   getById: (id) => api.get(`/tasks/${id}`),
   create: (taskData) => api.post('/tasks', taskData),
   update: (id, taskData) => api.put(`/tasks/${id}`, taskData),
   delete: (id) => api.delete(`/tasks/${id}`),
-  getMyTasks: (params) => api.get('/tasks/my-tasks', { params }),
-  getMyTaskStats: () => api.get('/tasks/my-tasks/stats'),
+  getMyTasks: () => api.get('/tasks/my-tasks'),
+  logTime: (taskId, timeData) => api.post(`/tasks/${taskId}/log-time`, timeData),
   getTimeLogs: (taskId) => api.get(`/tasks/${taskId}/time-logs`),
-  createTimeLog: (taskId, timeLogData) => api.post(`/tasks/${taskId}/time-logs`, timeLogData),
 };
 
-// Comments API
+// Comment API
 export const commentsAPI = {
-  create: (commentData) => api.post('/comments', commentData),
-  getTaskComments: (taskId) => api.get(`/comments/task/${taskId}`),
-  getProjectComments: (projectId) => api.get(`/comments/project/${projectId}`),
-  update: (commentId, commentData) => api.put(`/comments/${commentId}`, commentData),
-  delete: (commentId) => api.delete(`/comments/${commentId}`),
+  getByProject: (projectId) => api.get(`/projects/${projectId}/comments`),
+  getByTask: (taskId) => api.get(`/tasks/${taskId}/comments`),
+  createForProject: (projectId, commentData) => api.post(`/projects/${projectId}/comments`, commentData),
+  createForTask: (taskId, commentData) => api.post(`/tasks/${taskId}/comments`, commentData),
+  update: (id, commentData) => api.put(`/comments/${id}`, commentData),
+  delete: (id) => api.delete(`/comments/${id}`),
 };
 
-// Users API
+// User API
 export const usersAPI = {
   getCurrentUser: () => api.get('/users/me'),
   updateCurrentUser: (userData) => api.put('/users/me', userData),
