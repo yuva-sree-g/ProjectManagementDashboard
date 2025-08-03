@@ -328,12 +328,12 @@ const Dashboard = () => {
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             <div className="px-6 py-6 border-b border-gray-200 flex justify-between items-center">
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <svg className="w-6 h-6 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                <svg className="w-6 h-6 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
                   All Projects
-                </h3>
+              </h3>
                 <p className="text-gray-600 mt-1">All projects in the system</p>
               </div>
               <button
@@ -393,12 +393,12 @@ const Dashboard = () => {
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             <div className="px-6 py-6 border-b border-gray-200 flex justify-between items-center">
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <svg className="w-6 h-6 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                <svg className="w-6 h-6 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
                   All Tasks
-                </h3>
+              </h3>
                 <p className="text-gray-600 mt-1">All tasks in the system</p>
               </div>
               <button
@@ -422,19 +422,19 @@ const Dashboard = () => {
                   {tasks.map((task) => {
                     const project = projects.find(p => p.id === task.project_id);
                     return (
-                      <div
-                        key={task.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
-                        onClick={() => navigate(`/tasks/${task.id}`)}
-                      >
-                        <div className="flex-1">
-                          <h4 className="text-sm font-semibold text-gray-900">
-                            {task.title}
-                          </h4>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {task.description?.substring(0, 60)}
-                            {task.description?.length > 60 && '...'}
-                          </p>
+                    <div
+                      key={task.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
+                      onClick={() => navigate(`/tasks/${task.id}`)}
+                    >
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-gray-900">
+                          {task.title}
+                        </h4>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {task.description?.substring(0, 60)}
+                          {task.description?.length > 60 && '...'}
+                        </p>
                           <div className="flex items-center mt-2 text-xs text-gray-500">
                             <span>Project: {project?.title || 'Unknown'}</span>
                             <span className="mx-2">•</span>
@@ -442,24 +442,24 @@ const Dashboard = () => {
                             <span className="mx-2">•</span>
                             <span>Priority: {task.priority}</span>
                           </div>
-                        </div>
+                      </div>
                         <div className="flex flex-col items-end space-y-1">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                            task.status === 'closed' ? 'bg-green-100 text-green-800' :
-                            task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                            task.status === 'review' ? 'bg-purple-100 text-purple-800' :
-                            task.status === 'ready_to_test' ? 'bg-orange-100 text-orange-800' :
-                            task.status === 'in_test' ? 'bg-indigo-100 text-indigo-800' :
-                            task.status === 'todo' ? 'bg-gray-100 text-gray-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {task.status.replace('_', ' ')}
-                          </span>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                        task.status === 'closed' ? 'bg-green-100 text-green-800' :
+                        task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                        task.status === 'review' ? 'bg-purple-100 text-purple-800' :
+                        task.status === 'ready_to_test' ? 'bg-orange-100 text-orange-800' :
+                        task.status === 'in_test' ? 'bg-indigo-100 text-indigo-800' :
+                        task.status === 'todo' ? 'bg-gray-100 text-gray-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {task.status.replace('_', ' ')}
+                      </span>
                           {task.assignee_id === currentUser?.id && (
                             <span className="text-xs text-purple-600 font-medium">My Task</span>
                           )}
                         </div>
-                      </div>
+                    </div>
                     );
                   })}
                 </div>
