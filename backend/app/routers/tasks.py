@@ -2,10 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status, Security
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 from typing import List
+import asyncio
 from ..database import get_db
 from ..models import Task, User, TimeLog, Project
 from ..schemas.task import TaskCreate, Task as TaskSchema, TaskUpdate, TimeLogCreate, TimeLog as TimeLogSchema
 from ..auth import get_current_active_user
+from ..email_service import send_task_assignment_email, send_task_update_email, send_task_completion_email
 
 security = HTTPBearer()
 
@@ -39,7 +41,7 @@ def get_tasks(
     return tasks
 
 @router.post("/", response_model=TaskSchema)
-def create_task(
+async def create_task(
     task: TaskCreate,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -59,6 +61,22 @@ def create_task(
     db.add(db_task)
     db.commit()
     db.refresh(db_task)
+    
+    # Send email notification if task is assigned to someone other than the creator
+    if db_task.assignee_id and db_task.assignee_id != current_user.id:
+        assignee = db.query(User).filter(User.id == db_task.assignee_id).first()
+        if assignee and assignee.email:
+            # Send email notification asynchronously
+            asyncio.create_task(
+                send_task_assignment_email(
+                    user_email=assignee.email,
+                    user_name=assignee.full_name or assignee.username,
+                    task_title=db_task.title,
+                    project_name=project.name,
+                    assigned_by=current_user.full_name or current_user.username
+                )
+            )
+    
     return db_task
 
 @router.get("/{task_id}", response_model=TaskSchema)
@@ -90,7 +108,7 @@ def test_task_update(
         raise HTTPException(status_code=422, detail=str(e))
 
 @router.put("/{task_id}", response_model=TaskSchema)
-def update_task(
+async def update_task(
     task_id: int,
     task_update: TaskUpdate,
     current_user: User = Depends(get_current_active_user),
@@ -109,6 +127,10 @@ def update_task(
         if not can_update:
             raise HTTPException(status_code=403, detail="You don't have permission to update this task")
         
+        # Store old values for comparison
+        old_assignee_id = db_task.assignee_id
+        old_status = db_task.status
+        
         update_data = task_update.dict(exclude_unset=True)
         
         # Log the update data for debugging
@@ -122,6 +144,54 @@ def update_task(
         
         db.commit()
         db.refresh(db_task)
+        
+        # Send email notifications for different update types
+        if db_task.assignee_id and db_task.assignee_id != current_user.id:
+            assignee = db.query(User).filter(User.id == db_task.assignee_id).first()
+            if assignee and assignee.email:
+                # Determine update type
+                update_type = "General Update"
+                if 'status' in update_data:
+                    if db_task.status == "completed":
+                        update_type = "Task Completed"
+                        # Send completion email
+                        asyncio.create_task(
+                            send_task_completion_email(
+                                user_email=assignee.email,
+                                user_name=assignee.full_name or assignee.username,
+                                task_title=db_task.title,
+                                project_name=project.name,
+                                completed_by=current_user.full_name or current_user.username
+                            )
+                        )
+                    else:
+                        update_type = f"Status Changed to {db_task.status}"
+                
+                if 'assignee_id' in update_data and old_assignee_id != db_task.assignee_id:
+                    update_type = "Task Reassigned"
+                    # Send assignment email to new assignee
+                    asyncio.create_task(
+                        send_task_assignment_email(
+                            user_email=assignee.email,
+                            user_name=assignee.full_name or assignee.username,
+                            task_title=db_task.title,
+                            project_name=project.name,
+                            assigned_by=current_user.full_name or current_user.username
+                        )
+                    )
+                else:
+                    # Send general update email
+                    asyncio.create_task(
+                        send_task_update_email(
+                            user_email=assignee.email,
+                            user_name=assignee.full_name or assignee.username,
+                            task_title=db_task.title,
+                            project_name=project.name,
+                            update_type=update_type,
+                            updated_by=current_user.full_name or current_user.username
+                        )
+                    )
+        
         return db_task
     except Exception as e:
         print(f"Error updating task {task_id}: {str(e)}")
