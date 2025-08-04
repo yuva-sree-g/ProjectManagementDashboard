@@ -5,8 +5,8 @@ A modern, full-stack project management application built with FastAPI, React, a
 ## 📋 Application Deliverables
 
 ### ✅ Live Application URL
-- **Frontend**: [Deployed on Vercel/Netlify] (To be added after deployment)
-- **Backend**: [Deployed on Railway/Render] (To be added after deployment)
+- **Frontend**: [Deployed on Vercel] (To be added after deployment)
+- **Backend**: [Deployed on Render] (To be added after deployment)
 - **API Documentation**: [Backend URL]/docs
 
 ### ✅ GitHub Repository
@@ -20,8 +20,8 @@ A modern, full-stack project management application built with FastAPI, React, a
 - **Link**: [To be added after recording]
 
 ### ✅ Admin Credentials
-- **Username**: admin@projectdashboard.com
-- **Password**: admin123
+- **Username**: yuvasreega
+- **Password**: yuvasree
 - **Access**: Full administrative privileges for evaluator access
 
 ## ✨ Features
@@ -30,9 +30,11 @@ A modern, full-stack project management application built with FastAPI, React, a
 - **📊 Dashboard**: Overview of all projects and tasks with statistics
 - **📋 Project Management**: Create, update, and track projects globally
 - **✅ Task Management**: Kanban-style task board with status tracking
-- **⏱️ Time Tracking**: Log and track time spent on tasks (optional descriptions)
-- **👥 User Management**: Assign tasks to team members
+- **⏱️ Time Tracking**: Log and track time spent on tasks with estimated vs actual hours
+- **👥 User Management**: Assign tasks to team members with global visibility
 - **💬 Comments**: Add comments to projects and tasks
+- **📧 Email Notifications**: Automatic email notifications for task assignments, updates, and completions
+- **📈 Performance Metrics**: Dashboard with productivity score and project health indicators
 - **📱 Responsive Design**: Works on desktop and mobile devices
 
 ## 🛠️ Tech Stack
@@ -43,6 +45,8 @@ A modern, full-stack project management application built with FastAPI, React, a
 - **PostgreSQL** - Database
 - **JWT** - Authentication
 - **Pydantic** - Data validation
+- **FastAPI-Mail** - Email notifications
+- **Python-dotenv** - Environment management
 
 ### Frontend
 - **React** - UI framework
@@ -50,11 +54,13 @@ A modern, full-stack project management application built with FastAPI, React, a
 - **React Router** - Navigation
 - **Tailwind CSS** - Styling
 - **Axios** - HTTP client
+- **Chart.js** - Data visualization
 
 ### DevOps
 - **Docker** - Containerization
 - **Docker Compose** - Local development
-- **GitHub Actions** - CI/CD
+- **Vercel** - Frontend deployment
+- **Render** - Backend deployment
 
 ## 🚀 Quick Start
 
@@ -95,12 +101,11 @@ A modern, full-stack project management application built with FastAPI, React, a
 ### Process Mastery (30 points)
 - **Methodology (15 pts)**: ✅ Following a structured development approach
 - **Problem Solving (10 pts)**: ✅ Effective use of AI for debugging and optimization
-- **Time Management (5 pts)**: ✅ Completed project within 2-day timeline
+- **Time Management (5 pts)**: ✅ Completing project within timeline
 
 ### Documentation & Knowledge Transfer (20 points)
-- **Process Documentation (10 pts)**: ✅ Clear, detailed development process
-- **AI Prompt Library (5 pts)**: ✅ Comprehensive, reusable prompt collection
-- **Reflection Quality (5 pts)**: ✅ Thoughtful analysis of AI effectiveness and learning
+- **Documentation (10 pts)**: ✅ Comprehensive documentation and guides
+- **Knowledge Transfer (10 pts)**: ✅ Clear code structure and comments
 
 ## 📁 Project Structure
 
@@ -140,6 +145,11 @@ DATABASE_URL=postgresql://user:password@host:port/database
 SECRET_KEY=your-secret-key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_FROM=your-email@gmail.com
+FRONTEND_URL=https://your-frontend-url.com
+CORS_ORIGINS=http://localhost:3000,https://your-frontend-url.com
 ```
 
 ### Frontend
@@ -173,6 +183,13 @@ REACT_APP_API_URL=https://your-backend-url.com
 - `GET /timelog` - List time logs
 - `PUT /timelog/{id}` - Update time log
 - `DELETE /timelog/{id}` - Delete time log
+- `GET /timelog/summary/user/{user_id}` - Get time summary for user
+
+### Comments
+- `GET /comments/task/{task_id}` - Get task comments
+- `POST /comments/task/{task_id}` - Create task comment
+- `GET /comments/project/{project_id}` - Get project comments
+- `POST /comments/project/{project_id}` - Create project comment
 
 ### Users
 - `GET /users/me` - Get current user
@@ -195,29 +212,35 @@ REACT_APP_API_URL=https://your-backend-url.com
 
 ### Task Management
 - Kanban-style task board
-- Multiple task statuses (To Do, In Progress, Review, etc.)
-- Task priority levels
+- Multiple task statuses (To Do, In Progress, Review, Ready to Test, In Test, Closed)
+- Task priority levels (Low, Medium, High, Urgent)
 - Estimated vs actual hours tracking
+- Task assignment to users
+- Global task visibility for all users
 
 ### Time Tracking
 - Log time spent on tasks
 - Track actual hours vs estimated hours
-- Time summary reports
-- Optional task descriptions
+- Time summary reports with filtering
+- Optional descriptions for time logs
+- Visual progress indicators
 
 ### User Management
 - User registration and authentication
-- Role-based access control
+- JWT-based secure authentication
 - Task assignment to users
 - User profile management
+- Global data visibility for all authenticated users
 
 ## 🔒 Security Features
 
 - JWT-based authentication
 - Password hashing with bcrypt
-- CORS protection
+- CORS protection with configurable origins
 - Input validation with Pydantic
 - SQL injection protection with SQLAlchemy
+- Secure email notifications
+- Environment variable protection
 
 ## 🧪 Testing
 

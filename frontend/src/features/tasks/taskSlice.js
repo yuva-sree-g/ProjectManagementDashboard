@@ -121,10 +121,23 @@ export const fetchMyTaskStats = createAsyncThunk(
   }
 );
 
+export const fetchPerformanceMetrics = createAsyncThunk(
+  'tasks/fetchPerformanceMetrics',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await tasksAPI.getPerformanceMetrics();
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.detail || 'Failed to fetch performance metrics');
+    }
+  }
+);
+
 const initialState = {
   tasks: [],
   myTasks: [],
   taskStats: null,
+  performanceMetrics: null,
   currentTask: null,
   timeLogs: [],
   loading: false,
@@ -249,6 +262,19 @@ const taskSlice = createSlice({
         state.taskStats = action.payload;
       })
       .addCase(fetchMyTaskStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Fetch performance metrics
+      .addCase(fetchPerformanceMetrics.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPerformanceMetrics.fulfilled, (state, action) => {
+        state.loading = false;
+        state.performanceMetrics = action.payload;
+      })
+      .addCase(fetchPerformanceMetrics.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

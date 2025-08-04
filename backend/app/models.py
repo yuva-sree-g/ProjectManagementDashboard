@@ -73,6 +73,7 @@ class Task(Base):
     time_logs = relationship("TimeLog", back_populates="task")
     comments = relationship("Comment", back_populates="task")
 
+
 class TimeLog(Base):
     __tablename__ = "time_logs"
 

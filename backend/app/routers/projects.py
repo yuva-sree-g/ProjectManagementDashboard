@@ -169,4 +169,58 @@ def get_project_summary(
         "completion_percentage": round((closed_tasks / total_tasks * 100) if total_tasks > 0 else 0, 2),
         "total_estimated_hours": total_estimated_hours,
         "total_actual_hours": total_actual_hours
-    } 
+    }
+
+# Comment endpoints for projects
+from ..schemas.task import Comment as CommentSchema, CommentCreate as CommentCreateSchema
+
+@router.get("/{project_id}/comments", response_model=List[CommentSchema])
+def get_project_comments(
+    project_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get all comments for a specific project (globally visible)."""
+    # Verify project exists
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    from ..models import Comment
+    from sqlalchemy.orm import joinedload
+    
+    comments = db.query(Comment).options(joinedload(Comment.user)).filter(
+        Comment.project_id == project_id
+    ).order_by(Comment.created_at.desc()).all()
+    return comments
+
+@router.post("/{project_id}/comments", response_model=CommentSchema)
+def create_project_comment(
+    project_id: int,
+    comment_data: CommentCreateSchema,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new comment on a project (anyone can comment on any project)."""
+    # Verify project exists
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    from ..models import Comment
+    
+    db_comment = Comment(
+        content=comment_data.content,
+        user_id=current_user.id,
+        project_id=project_id
+    )
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    
+    # Fetch the comment with user information
+    from sqlalchemy.orm import joinedload
+    db_comment_with_user = db.query(Comment).options(joinedload(Comment.user)).filter(
+        Comment.id == db_comment.id
+    ).first()
+    return db_comment_with_user 

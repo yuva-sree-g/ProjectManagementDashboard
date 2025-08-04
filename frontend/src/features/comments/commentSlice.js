@@ -6,7 +6,7 @@ export const fetchTaskComments = createAsyncThunk(
   'comments/fetchTaskComments',
   async (taskId, { rejectWithValue }) => {
     try {
-      const response = await commentsAPI.getTaskComments(taskId);
+      const response = await commentsAPI.getByTask(taskId);
       return { taskId, comments: response.data };
     } catch (error) {
       return rejectWithValue(error.response?.data?.detail || 'Failed to fetch task comments');
@@ -18,7 +18,7 @@ export const fetchProjectComments = createAsyncThunk(
   'comments/fetchProjectComments',
   async (projectId, { rejectWithValue }) => {
     try {
-      const response = await commentsAPI.getProjectComments(projectId);
+      const response = await commentsAPI.getByProject(projectId);
       return { projectId, comments: response.data };
     } catch (error) {
       return rejectWithValue(error.response?.data?.detail || 'Failed to fetch project comments');
@@ -30,7 +30,14 @@ export const createComment = createAsyncThunk(
   'comments/createComment',
   async (commentData, { rejectWithValue }) => {
     try {
-      const response = await commentsAPI.create(commentData);
+      let response;
+      if (commentData.task_id) {
+        response = await commentsAPI.createForTask(commentData.task_id, commentData);
+      } else if (commentData.project_id) {
+        response = await commentsAPI.createForProject(commentData.project_id, commentData);
+      } else {
+        throw new Error('Either task_id or project_id is required');
+      }
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.detail || 'Failed to create comment');

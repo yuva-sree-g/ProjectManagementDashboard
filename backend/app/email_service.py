@@ -1,8 +1,12 @@
+import logging
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import EmailStr
 from typing import Optional
 import os
 from dotenv import load_dotenv
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -83,7 +87,7 @@ async def send_task_assignment_email(
         await fastmail.send_message(message)
         return True
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        logger.error(f"Failed to send email: {e}")
         return False
 
 async def send_task_update_email(
@@ -150,7 +154,7 @@ async def send_task_update_email(
         await fastmail.send_message(message)
         return True
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        logger.error(f"Failed to send email: {e}")
         return False
 
 async def send_task_completion_email(
@@ -215,5 +219,5 @@ async def send_task_completion_email(
         await fastmail.send_message(message)
         return True
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        logger.error(f"Failed to send email: {e}")
         return False 

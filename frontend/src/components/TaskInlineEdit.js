@@ -64,7 +64,7 @@ const TaskInlineEdit = ({ task, onClose, onSave }) => {
       };
       
       // Log the data being sent for debugging
-      console.log('Sending update data:', updateData);
+  
       
       await dispatch(updateTask({ id: task.id, taskData: updateData })).unwrap();
       onSave && onSave();

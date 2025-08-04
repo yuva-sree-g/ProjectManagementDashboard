@@ -1,9 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from .database import engine
 from .models import Base
 from .routers import auth, projects, tasks, users, comments, timelog
+from sqlalchemy.orm import Session
+from sqlalchemy import func, and_
+from datetime import datetime, timedelta
+from .database import get_db
+from .models import Task, User, TimeLog, Project
+from .auth import get_current_active_user
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -73,6 +79,7 @@ app.include_router(users.router)
 app.include_router(comments.router)
 app.include_router(timelog.router)
 
+
 @app.get("/")
 def read_root():
     """Root endpoint."""
@@ -86,3 +93,111 @@ def read_root():
 def health_check():
     """Health check endpoint."""
     return {"status": "healthy"} 
+
+# Performance Metrics endpoint
+@app.get("/performance-metrics")
+def get_performance_metrics(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get performance metrics for the dashboard."""
+    try:
+        # Calculate date ranges
+        now = datetime.utcnow()
+        week_ago = now - timedelta(days=7)
+        month_ago = now - timedelta(days=30)
+        
+        # 1. Tasks completed this week
+        tasks_completed_this_week = db.query(Task).filter(
+            and_(
+                Task.status == 'closed',
+                Task.updated_at >= week_ago
+            )
+        ).count()
+        
+        # 2. Average task completion time (in days)
+        completed_tasks = db.query(Task).filter(
+            and_(
+                Task.status == 'closed',
+                Task.created_at.isnot(None),
+                Task.updated_at.isnot(None)
+            )
+        ).all()
+        
+        total_completion_days = 0
+        valid_tasks = 0
+        
+        for task in completed_tasks:
+            if task.created_at and task.updated_at:
+                completion_time = (task.updated_at - task.created_at).days
+                if completion_time >= 0:  # Only count valid completion times
+                    total_completion_days += completion_time
+                    valid_tasks += 1
+        
+        avg_completion_days = round(total_completion_days / valid_tasks, 1) if valid_tasks > 0 else 0
+        
+        # 3. Team productivity score (based on completed tasks vs total tasks)
+        total_tasks = db.query(Task).count()
+        completed_tasks_count = db.query(Task).filter(Task.status == 'closed').count()
+        productivity_score = round((completed_tasks_count / total_tasks * 100), 1) if total_tasks > 0 else 0
+        
+        # 4. Project health indicators
+        projects = db.query(Project).all()
+        project_health = []
+        
+        for project in projects:
+            project_tasks = db.query(Task).filter(Task.project_id == project.id).all()
+            total_project_tasks = len(project_tasks)
+            completed_project_tasks = len([t for t in project_tasks if t.status == 'closed'])
+            
+            if total_project_tasks > 0:
+                completion_rate = round((completed_project_tasks / total_project_tasks * 100), 1)
+                health_status = "healthy" if completion_rate >= 70 else "warning" if completion_rate >= 40 else "critical"
+            else:
+                completion_rate = 0
+                health_status = "no_tasks"
+            
+            project_health.append({
+                "project_id": project.id,
+                "project_title": project.title,
+                "completion_rate": completion_rate,
+                "total_tasks": total_project_tasks,
+                "completed_tasks": completed_project_tasks,
+                "health_status": health_status
+            })
+        
+        # 5. Time tracking metrics
+        total_logged_hours = db.query(func.sum(TimeLog.hours)).scalar() or 0
+        avg_hours_per_task = round(total_logged_hours / total_tasks, 1) if total_tasks > 0 else 0
+        
+        # 6. Weekly trends
+        weekly_completed_tasks = []
+        for i in range(7):
+            day_start = week_ago + timedelta(days=i)
+            day_end = day_start + timedelta(days=1)
+            daily_completed = db.query(Task).filter(
+                and_(
+                    Task.status == 'closed',
+                    Task.updated_at >= day_start,
+                    Task.updated_at < day_end
+                )
+            ).count()
+            weekly_completed_tasks.append({
+                "day": day_start.strftime("%A"),
+                "completed": daily_completed
+            })
+        
+        return {
+            "tasks_completed_this_week": tasks_completed_this_week,
+            "avg_completion_days": avg_completion_days,
+            "productivity_score": productivity_score,
+            "project_health": project_health,
+            "total_logged_hours": total_logged_hours,
+            "avg_hours_per_task": avg_hours_per_task,
+            "weekly_trends": weekly_completed_tasks,
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks_count
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error calculating performance metrics: {str(e)}") 

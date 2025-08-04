@@ -187,6 +187,18 @@ const TaskList = () => {
                       </dd>
                     </div>
                     
+                    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                      <dt className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Assignee</dt>
+                      <dd className="text-base text-gray-900 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div className="flex items-center">
+                          <svg className="w-5 h-5 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          {specificTask.assignee_name || specificTask.assignee_username || 'Unassigned'}
+                        </div>
+                      </dd>
+                    </div>
+                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                         <dt className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Status</dt>

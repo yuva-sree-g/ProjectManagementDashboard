@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Security
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
+from sqlalchemy import func, and_
 from typing import List
 import asyncio
+from datetime import datetime, timedelta
 from ..database import get_db
 from ..models import Task, User, TimeLog, Project
 from ..schemas.task import TaskCreate, Task as TaskSchema, TaskUpdate, TimeLogCreate, TimeLog as TimeLogSchema
@@ -23,7 +25,9 @@ def get_tasks(
     db: Session = Depends(get_db)
 ):
     """Get all tasks in the system (globally visible)."""
-    query = db.query(Task)
+    from sqlalchemy.orm import joinedload
+    
+    query = db.query(Task).options(joinedload(Task.assignee))
     
     # Filter by project if specified
     if project_id:
@@ -38,6 +42,16 @@ def get_tasks(
         query = query.filter(Task.assignee_id == assignee_id)
     
     tasks = query.offset(skip).limit(limit).all()
+    
+    # Add assignee information to each task
+    for task in tasks:
+        if task.assignee:
+            task.assignee_name = task.assignee.full_name
+            task.assignee_username = task.assignee.username
+        else:
+            task.assignee_name = None
+            task.assignee_username = None
+    
     return tasks
 
 @router.post("/", response_model=TaskSchema)
@@ -86,9 +100,20 @@ def get_task(
     db: Session = Depends(get_db)
 ):
     """Get a specific task by ID (globally visible)."""
-    task = db.query(Task).filter(Task.id == task_id).first()
+    from sqlalchemy.orm import joinedload
+    
+    task = db.query(Task).options(joinedload(Task.assignee)).filter(Task.id == task_id).first()
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
+    
+    # Add assignee information
+    if task.assignee:
+        task.assignee_name = task.assignee.full_name
+        task.assignee_username = task.assignee.username
+    else:
+        task.assignee_name = None
+        task.assignee_username = None
+    
     return task
 
 @router.post("/test-update", response_model=dict)
@@ -99,10 +124,10 @@ def test_task_update(
     """Test endpoint to debug task update validation."""
     try:
         update_data = task_update.dict(exclude_unset=True)
-        print(f"Test update data received: {update_data}")
+
         return {"message": "Validation successful", "data": update_data}
     except Exception as e:
-        print(f"Validation error: {str(e)}")
+
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=422, detail=str(e))
@@ -124,6 +149,10 @@ async def update_task(
         project = db.query(Project).filter(Project.id == db_task.project_id).first()
         can_update = (project.owner_id == current_user.id or db_task.assignee_id == current_user.id)
         
+        # For global visibility, allow anyone to update tasks
+        # can_update = (project.owner_id == current_user.id or db_task.assignee_id == current_user.id)
+        can_update = True  # Allow anyone to update tasks for global visibility
+        
         if not can_update:
             raise HTTPException(status_code=403, detail="You don't have permission to update this task")
         
@@ -134,67 +163,93 @@ async def update_task(
         update_data = task_update.dict(exclude_unset=True)
         
         # Log the update data for debugging
-        print(f"Updating task {task_id} with data: {update_data}")
+
         
         for field, value in update_data.items():
             if hasattr(db_task, field):
                 setattr(db_task, field, value)
-            else:
-                print(f"Warning: Field {field} not found on Task model")
         
         db.commit()
         db.refresh(db_task)
         
         # Send email notifications for different update types
-        if db_task.assignee_id and db_task.assignee_id != current_user.id:
-            assignee = db.query(User).filter(User.id == db_task.assignee_id).first()
-            if assignee and assignee.email:
-                # Determine update type
-                update_type = "General Update"
-                if 'status' in update_data:
-                    if db_task.status == "completed":
-                        update_type = "Task Completed"
-                        # Send completion email
-                        asyncio.create_task(
-                            send_task_completion_email(
-                                user_email=assignee.email,
-                                user_name=assignee.full_name or assignee.username,
-                                task_title=db_task.title,
-                                project_name=project.name,
-                                completed_by=current_user.full_name or current_user.username
-                            )
-                        )
-                    else:
-                        update_type = f"Status Changed to {db_task.status}"
-                
-                if 'assignee_id' in update_data and old_assignee_id != db_task.assignee_id:
-                    update_type = "Task Reassigned"
-                    # Send assignment email to new assignee
+        # Send email to the logged-in user for all updates
+        
+        if current_user.email:
+            # Determine update type based on what actually changed
+            update_type = "General Update"
+            changed_fields = []
+            
+            # Check for specific field changes
+            if 'status' in update_data:
+                if db_task.status == "completed":
+                    update_type = "Task Completed"
+                    # Send completion email
                     asyncio.create_task(
-                        send_task_assignment_email(
-                            user_email=assignee.email,
-                            user_name=assignee.full_name or assignee.username,
+                        send_task_completion_email(
+                            user_email=current_user.email,
+                            user_name=current_user.full_name or current_user.username,
                             task_title=db_task.title,
-                            project_name=project.name,
-                            assigned_by=current_user.full_name or current_user.username
+                            project_name=project.title,
+                            completed_by=current_user.full_name or current_user.username
                         )
                     )
                 else:
-                    # Send general update email
-                    asyncio.create_task(
-                        send_task_update_email(
-                            user_email=assignee.email,
-                            user_name=assignee.full_name or assignee.username,
-                            task_title=db_task.title,
-                            project_name=project.name,
-                            update_type=update_type,
-                            updated_by=current_user.full_name or current_user.username
-                        )
+                    changed_fields.append(f"Status to {db_task.status}")
+            
+            if 'actual_hours' in update_data:
+                changed_fields.append(f"Actual Hours to {db_task.actual_hours}")
+            
+            if 'estimated_hours' in update_data:
+                changed_fields.append(f"Estimated Hours to {db_task.estimated_hours}")
+            
+            if 'priority' in update_data:
+                changed_fields.append(f"Priority to {db_task.priority}")
+            
+            if 'title' in update_data:
+                changed_fields.append("Task Title")
+            
+            if 'description' in update_data:
+                changed_fields.append("Task Description")
+            
+            if 'assignee_id' in update_data and old_assignee_id != db_task.assignee_id:
+                update_type = "Task Reassigned"
+                # Send assignment email to new assignee
+                asyncio.create_task(
+                    send_task_assignment_email(
+                        user_email=current_user.email,
+                        user_name=current_user.full_name or current_user.username,
+                        task_title=db_task.title,
+                        project_name=project.title,
+                        assigned_by=current_user.full_name or current_user.username
                     )
+                )
+            
+            # Create update type from all changed fields
+            if changed_fields:
+                if len(changed_fields) == 1:
+                    update_type = f"{changed_fields[0]} Updated"
+                else:
+                    update_type = f"Multiple fields updated: {', '.join(changed_fields)}"
+            
+            # Send general update email for all other cases
+            if update_type != "Task Completed" and update_type != "Task Reassigned":
+
+                email_task = asyncio.create_task(
+                    send_task_update_email(
+                        user_email=current_user.email,
+                        user_name=current_user.full_name or current_user.username,
+                        task_title=db_task.title,
+                        project_name=project.title,
+                        update_type=update_type,
+                        updated_by=current_user.full_name or current_user.username
+                    )
+                )
+
         
         return db_task
     except Exception as e:
-        print(f"Error updating task {task_id}: {str(e)}")
+
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
@@ -307,4 +362,58 @@ def get_task_time_logs(
         raise HTTPException(status_code=404, detail="Task not found")
     
     time_logs = db.query(TimeLog).filter(TimeLog.task_id == task_id).all()
-    return time_logs 
+    return time_logs
+
+# Comment endpoints for tasks
+from ..schemas.task import Comment as CommentSchema, CommentCreate as CommentCreateSchema
+
+@router.get("/{task_id}/comments", response_model=List[CommentSchema])
+def get_task_comments(
+    task_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get all comments for a specific task (globally visible)."""
+    # Verify task exists
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    from ..models import Comment
+    from sqlalchemy.orm import joinedload
+    
+    comments = db.query(Comment).options(joinedload(Comment.user)).filter(
+        Comment.task_id == task_id
+    ).order_by(Comment.created_at.desc()).all()
+    return comments
+
+@router.post("/{task_id}/comments", response_model=CommentSchema)
+def create_task_comment(
+    task_id: int,
+    comment_data: CommentCreateSchema,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new comment on a task (anyone can comment on any task)."""
+    # Verify task exists
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    from ..models import Comment
+    
+    db_comment = Comment(
+        content=comment_data.content,
+        user_id=current_user.id,
+        task_id=task_id
+    )
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    
+    # Fetch the comment with user information
+    from sqlalchemy.orm import joinedload
+    db_comment_with_user = db.query(Comment).options(joinedload(Comment.user)).filter(
+        Comment.id == db_comment.id
+    ).first()
+    return db_comment_with_user 

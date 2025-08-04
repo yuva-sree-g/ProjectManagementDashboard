@@ -36,9 +36,11 @@ class TaskUpdate(BaseModel):
 
 class Task(TaskBase):
     id: int
-    actual_hours: Optional[int] = 0
+    actual_hours: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+    assignee_name: Optional[str] = None
+    assignee_username: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -81,4 +83,6 @@ class Comment(CommentBase):
     user: UserBase
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+ 

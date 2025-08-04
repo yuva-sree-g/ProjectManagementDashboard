@@ -3,157 +3,109 @@
 ## Database Design Prompts
 
 ### Prompt 1: Schema Generation
-**Prompt**: "Design a PostgreSQL database schema for a project management system with users, projects, tasks, time logs, and comments. Include proper relationships, constraints, and indexes."
-**Context**: Need for a scalable project management system with user authentication, project tracking, and time management
+**Prompt**: "Design a PostgreSQL database schema for a project management system with users, projects, tasks, time logs, and comments. Include proper relationships and constraints."
+**Context**: Needed a complete database design for the project management dashboard
 **Output Quality**: 9/10
-**Iterations**: 2 refinements needed for time tracking relationships
-**Final Result**: Implemented complete schema with users, projects, tasks, time_logs, and comments tables with proper foreign key relationships
+**Iterations**: 2 refinements needed
+**Final Result**: Implemented User, Project, Task, TimeLog, and Comment models with proper foreign key relationships and SQLAlchemy ORM
 
-### Prompt 2: Database Migration
-**Prompt**: "Create Alembic migration for adding time tracking functionality to existing project management database"
-**Context**: Existing database with users, projects, tasks tables
+### Prompt 2: Model Relationships
+**Prompt**: "Create SQLAlchemy models for the project management system with proper relationships and eager loading for performance."
+**Context**: Required optimized database queries with joinedload
 **Output Quality**: 8/10
-**Iterations**: 1 refinement for proper foreign key constraints
-**Final Result**: Successful migration adding time_logs table with proper relationships
+**Iterations**: 1 refinement needed
+**Final Result**: Implemented models with relationship() definitions and proper back_populates
 
 ## Code Generation Prompts
 
-### Prompt 3: API Endpoint Creation
-**Prompt**: "Create FastAPI endpoint for time tracking with CRUD operations, proper validation, and authorization"
-**Context**: Need RESTful API for time log management with user authentication
-**Output Quality**: 9/10
-**Modifications**: Added custom validation for hours field and date constraints
-**Final Result**: Complete time tracking API with create, read, update, delete operations
+### Prompt 3: FastAPI Endpoint Creation
+**Prompt**: "Create a FastAPI endpoint for updating tasks with proper error handling, validation, and email notifications."
+**Context**: Needed comprehensive task update functionality
+**Output Quality**: 8/10
+**Modifications**: Added custom email notification logic and improved error handling
 
 ### Prompt 4: React Component Generation
-**Prompt**: "Create a React component for time tracking form with validation, date picker, and hours input"
-**Context**: Need user-friendly form for logging time spent on tasks
-**Output Quality**: 8/10
-**Modifications**: Enhanced with better error handling and user feedback
-**Final Result**: Functional time tracking form with proper validation and UX
+**Prompt**: "Create a React component for displaying task details with inline editing, time tracking, and comments."
+**Context**: Required a comprehensive task management interface
+**Output Quality**: 7/10
+**Modifications**: Simplified component structure and improved state management
 
 ### Prompt 5: Redux Slice Creation
-**Prompt**: "Create Redux Toolkit slice for time tracking with async thunks for API calls"
-**Context**: Need state management for time logs with API integration
+**Prompt**: "Create a Redux Toolkit slice for managing tasks with async thunks for API calls."
+**Context**: Needed state management for tasks with CRUD operations
 **Output Quality**: 9/10
-**Modifications**: Added error handling and loading states
-**Final Result**: Complete Redux slice with create, fetch, update, delete operations
+**Modifications**: Added proper error handling and loading states
 
 ## Problem-Solving Prompts
 
-### Prompt 6: CORS Configuration
-**Prompt**: "Fix CORS issues in FastAPI backend for React frontend running on different ports"
-**Context**: Frontend on localhost:3000, backend on localhost:8000
-**Output Quality**: 10/10
-**Effectiveness**: Immediately resolved CORS errors
-**Final Result**: Proper CORS configuration allowing frontend-backend communication
+### Prompt 6: Email Configuration Debugging
+**Prompt**: "Debug why email notifications are not being sent. Check SMTP configuration and FastAPI-Mail setup."
+**Context**: Email notifications were failing silently
+**Effectiveness**: 8/10
+**Impact**: Successfully resolved email delivery issues and implemented proper error handling
 
-### Prompt 7: Docker Configuration
-**Prompt**: "Create Docker Compose setup for React frontend, FastAPI backend, and PostgreSQL database"
-**Context**: Need containerized development environment
-**Output Quality**: 9/10
-**Modifications**: Added volume mounts for development and proper networking
-**Final Result**: Complete Docker setup with hot reloading and database persistence
+### Prompt 7: Docker Container Issues
+**Prompt**: "Fix Docker container networking issues. Containers are not communicating properly."
+**Context**: Backend and database containers couldn't connect
+**Effectiveness**: 9/10
+**Impact**: Resolved container networking and port conflicts
 
-### Prompt 8: Authentication Flow
-**Prompt**: "Implement JWT authentication flow with login, register, and token refresh in FastAPI"
-**Context**: Need secure user authentication system
-**Output Quality**: 8/10
-**Modifications**: Enhanced with password hashing and proper error handling
-**Final Result**: Complete authentication system with JWT tokens
+### Prompt 8: React State Management
+**Prompt**: "Fix React component state resetting issue. File upload component loses selected file on re-render."
+**Context**: React StrictMode was causing state resets
+**Effectiveness**: 7/10
+**Impact**: Implemented useRef for persistent file storage
 
-## UI/UX Prompts
+### Prompt 9: API Route Conflicts
+**Prompt**: "Resolve API route conflict between /performance-metrics and /{task_id} endpoints."
+**Context**: FastAPI route ordering was causing conflicts
+**Effectiveness**: 9/10
+**Impact**: Moved performance metrics endpoint to main app level
 
-### Prompt 9: Dashboard Design
-**Prompt**: "Design a modern dashboard layout with project statistics, task overview, and recent activity"
-**Context**: Need comprehensive project management dashboard
-**Output Quality**: 8/10
-**Modifications**: Added responsive design and better data visualization
-**Final Result**: Professional dashboard with charts and statistics
-
-### Prompt 10: Form Validation
-**Prompt**: "Create comprehensive form validation for project creation with proper error messages"
-**Context**: Need user-friendly project creation form
-**Output Quality**: 9/10
-**Modifications**: Added real-time validation and better UX
-**Final Result**: Robust form validation with excellent user experience
+### Prompt 10: CORS Configuration
+**Prompt**: "Configure CORS for FastAPI to allow requests from React frontend in development and production."
+**Context**: Frontend couldn't connect to backend API
+**Effectiveness**: 8/10
+**Impact**: Properly configured CORS for both development and production environments
 
 ## Deployment Prompts
 
-### Prompt 11: Environment Configuration
-**Prompt**: "Set up environment variables for production deployment with proper security"
-**Context**: Need secure configuration for production environment
-**Output Quality**: 9/10
-**Modifications**: Added database URL configuration and secret management
-**Final Result**: Secure environment configuration for deployment
+### Prompt 11: Vercel Deployment
+**Prompt**: "Deploy React frontend to Vercel with proper environment variables and build configuration."
+**Context**: Needed production deployment for frontend
+**Effectiveness**: 9/10
+**Impact**: Successfully deployed frontend with automatic builds
 
-### Prompt 12: Docker Production Build
-**Prompt**: "Create production-ready Dockerfile for React frontend with optimized build"
-**Context**: Need optimized production build for frontend
-**Output Quality**: 8/10
-**Modifications**: Added multi-stage build for smaller image size
-**Final Result**: Optimized production Docker image
-
-## Testing Prompts
-
-### Prompt 13: API Testing
-**Prompt**: "Create comprehensive test cases for project management API endpoints"
-**Context**: Need thorough testing for API functionality
-**Output Quality**: 7/10
-**Modifications**: Added edge cases and error scenario testing
-**Final Result**: Complete test suite covering all API endpoints
-
-### Prompt 14: Component Testing
-**Prompt**: "Write React component tests for time tracking functionality"
-**Context**: Need unit tests for React components
-**Output Quality**: 8/10
-**Modifications**: Added integration tests and user interaction testing
-**Final Result**: Comprehensive component test coverage
+### Prompt 12: Render Backend Deployment
+**Prompt**: "Deploy FastAPI backend to Render with PostgreSQL database and environment variables."
+**Context**: Needed production deployment for backend
+**Effectiveness**: 8/10
+**Impact**: Successfully deployed backend with database connection
 
 ## Performance Optimization Prompts
 
-### Prompt 15: Database Query Optimization
-**Prompt**: "Optimize database queries for dashboard statistics with proper indexing"
-**Context**: Need fast dashboard loading with complex statistics
-**Output Quality**: 8/10
-**Effectiveness**: Improved query performance by 60%
-**Final Result**: Optimized queries with proper database indexing
+### Prompt 13: Database Query Optimization
+**Prompt**: "Optimize database queries for task listing with eager loading of relationships."
+**Context**: Task listing was slow due to N+1 query problem
+**Effectiveness**: 9/10
+**Impact**: Implemented joinedload for efficient querying
 
-### Prompt 16: React Performance
-**Prompt**: "Optimize React components for large task lists with virtualization"
-**Context**: Need smooth performance with hundreds of tasks
-**Output Quality**: 7/10
-**Modifications**: Implemented pagination instead of virtualization
-**Final Result**: Improved performance with paginated task lists
+### Prompt 14: React Performance
+**Prompt**: "Optimize React component rendering for large task lists with virtualization."
+**Context**: Dashboard was slow with many tasks
+**Effectiveness**: 7/10
+**Impact**: Implemented proper memoization and optimized re-renders
 
-## Debugging Prompts
+## Security Prompts
 
-### Prompt 17: Docker Issues Resolution
-**Prompt**: "Fix Docker Compose network issues and port conflicts"
-**Context**: Docker containers not starting due to network and port conflicts
-**Output Quality**: 9/10
-**Effectiveness**: Resolved all Docker startup issues
-**Final Result**: Stable Docker development environment
+### Prompt 15: JWT Authentication
+**Prompt**: "Implement secure JWT authentication with proper token validation and refresh logic."
+**Context**: Needed secure user authentication
+**Effectiveness**: 9/10
+**Impact**: Implemented secure JWT-based authentication system
 
-### Prompt 18: API Route Debugging
-**Prompt**: "Debug why FastAPI endpoints are returning 404 errors despite being defined"
-**Context**: API routes not accessible despite proper router inclusion
-**Output Quality**: 8/10
-**Effectiveness**: Identified missing import in __init__.py file
-**Final Result**: All API endpoints working correctly
-
-### Prompt 19: Database Connection Issues
-**Prompt**: "Fix PostgreSQL connection errors in Docker environment"
-**Context**: Backend unable to connect to database container
-**Output Quality**: 9/10
-**Effectiveness**: Resolved database connectivity issues
-**Final Result**: Stable database connection in Docker environment
-
-## Integration Prompts
-
-### Prompt 20: Frontend-Backend Integration
-**Prompt**: "Integrate React frontend with FastAPI backend for time tracking feature"
-**Context**: Need seamless integration between frontend time tracking and backend API
-**Output Quality**: 9/10
-**Modifications**: Added proper error handling and loading states
-**Final Result**: Complete time tracking integration with excellent UX 
+### Prompt 16: Input Validation
+**Prompt**: "Add comprehensive input validation for all API endpoints using Pydantic schemas."
+**Context**: Needed to prevent injection attacks and ensure data integrity
+**Effectiveness**: 8/10
+**Impact**: Implemented proper validation for all request/response schemas 

@@ -4,7 +4,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { fetchProjects } from '../features/projects/projectSlice';
-import { fetchTasks, fetchMyTaskStats } from '../features/tasks/taskSlice';
+import { fetchTasks, fetchMyTaskStats, fetchPerformanceMetrics } from '../features/tasks/taskSlice';
+import PerformanceMetrics from './PerformanceMetrics';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -13,7 +14,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { projects, loading: projectsLoading } = useSelector((state) => state.projects);
-  const { tasks, taskStats, loading: tasksLoading } = useSelector((state) => state.tasks);
+  const { tasks, taskStats, performanceMetrics, loading: tasksLoading } = useSelector((state) => state.tasks);
   const { user: currentUser } = useSelector((state) => state.auth);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
@@ -23,6 +24,7 @@ const Dashboard = () => {
   const refreshData = () => {
     dispatch(fetchTasks());
     dispatch(fetchMyTaskStats());
+    dispatch(fetchPerformanceMetrics());
     dispatch(fetchProjects());
     setLastUpdated(new Date());
   };
@@ -278,48 +280,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* My Task Status Overview */}
-          {taskStats && (
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="px-6 py-6 border-b border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900 flex items-center">
-                  <svg className="w-6 h-6 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  My Task Status Overview
-                </h3>
-                <p className="text-gray-600 mt-1">Tasks assigned to you by status</p>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="text-center p-4 bg-gray-50 rounded-xl">
-                    <div className="text-3xl font-bold text-gray-900">{taskStats.todo}</div>
-                    <div className="text-sm font-medium text-gray-600">To Do</div>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-xl">
-                    <div className="text-3xl font-bold text-blue-600">{taskStats.in_progress}</div>
-                    <div className="text-sm font-medium text-blue-600">In Progress</div>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-xl">
-                    <div className="text-3xl font-bold text-purple-600">{taskStats.review}</div>
-                    <div className="text-sm font-medium text-purple-600">Review</div>
-                  </div>
-                  <div className="text-center p-4 bg-orange-50 rounded-xl">
-                    <div className="text-3xl font-bold text-orange-600">{taskStats.ready_to_test}</div>
-                    <div className="text-sm font-medium text-orange-600">Ready to Test</div>
-                  </div>
-                  <div className="text-center p-4 bg-indigo-50 rounded-xl">
-                    <div className="text-3xl font-bold text-indigo-600">{taskStats.in_test}</div>
-                    <div className="text-sm font-medium text-indigo-600">In Test</div>
-                  </div>
-                  <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                    <div className="text-3xl font-bold text-emerald-600">{taskStats.closed}</div>
-                    <div className="text-sm font-medium text-emerald-600">Closed</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Performance Metrics */}
+          <PerformanceMetrics metrics={performanceMetrics} />
         </div>
 
         {/* All Projects and Tasks */}

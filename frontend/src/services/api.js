@@ -69,6 +69,7 @@ export const tasksAPI = {
   getMyTasks: () => api.get('/tasks/my-tasks'),
   logTime: (taskId, timeData) => api.post(`/tasks/${taskId}/log-time`, timeData),
   getTimeLogs: (taskId) => api.get(`/tasks/${taskId}/time-logs`),
+  getPerformanceMetrics: () => api.get('/performance-metrics'),
 };
 
 // Comment API
@@ -97,5 +98,7 @@ export const timelogAPI = {
   deleteTimeLog: (id) => api.delete(`/timelog/${id}`),
   getTimeSummary: (userId, filters = {}) => api.get(`/timelog/summary/user/${userId}`, { params: filters }),
 };
+
+
 
 export default api; 
