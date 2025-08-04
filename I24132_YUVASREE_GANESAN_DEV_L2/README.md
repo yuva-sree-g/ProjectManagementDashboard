@@ -111,6 +111,71 @@ A modern, full-stack project management application built with FastAPI, React, a
    - Go to http://localhost:3000/register
    - Create an account and start using the application
 
+## 🔧 Environment Setup
+
+### Backend Environment Variables
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/project_dashboard
+SECRET_KEY=your-secret-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+MAIL_FROM=your-email@gmail.com
+FRONTEND_URL=http://localhost:3000
+CORS_ORIGINS=http://localhost:3000,https://your-frontend-url.com
+```
+
+### Frontend Environment Variables
+```bash
+REACT_APP_API_URL=http://localhost:8000
+```
+
+## 📊 API Endpoints
+
+### Authentication
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `GET /auth/me` - Get current user
+
+### Projects
+- `GET /projects` - List all projects
+- `POST /projects` - Create new project
+- `GET /projects/{id}` - Get project details
+- `PUT /projects/{id}` - Update project
+- `DELETE /projects/{id}` - Delete project
+
+### Tasks
+- `GET /tasks` - List all tasks
+- `POST /tasks` - Create new task
+- `GET /tasks/{id}` - Get task details
+- `PUT /tasks/{id}` - Update task
+- `DELETE /tasks/{id}` - Delete task
+- `POST /tasks/{id}/log-time` - Log time for task
+
+### Comments
+- `GET /tasks/{id}/comments` - Get task comments
+- `POST /tasks/{id}/comments` - Add comment to task
+- `GET /projects/{id}/comments` - Get project comments
+- `POST /projects/{id}/comments` - Add comment to project
+
+### Performance Metrics
+- `GET /performance-metrics` - Get dashboard metrics
+
+## 🧪 Testing
+
+### Backend Tests
+```bash
+cd backend
+pytest
+```
+
+### Frontend Tests
+```bash
+cd frontend
+npm test
+```
+
 ## 📊 Evaluation Framework (100 Points)
 
 ### Technical Implementation (50 points)
@@ -125,4 +190,53 @@ A modern, full-stack project management application built with FastAPI, React, a
 
 ### Documentation & Knowledge Transfer (20 points)
 - **Documentation (10 pts)**: ✅ Comprehensive documentation and guides
-- **Knowledge Transfer (10 pts)**: ✅ Clear code structure and comments 
+- **Knowledge Transfer (10 pts)**: ✅ Clear code structure and comments
+
+## 📁 Project Structure
+
+```
+ProjectManagementDashboard/
+├── backend/                 # FastAPI backend
+│   ├── app/                # Application code
+│   │   ├── routers/        # API endpoints
+│   │   ├── schemas/        # Pydantic models
+│   │   ├── models.py       # Database models
+│   │   ├── database.py     # Database configuration
+│   │   ├── auth.py         # Authentication logic
+│   │   └── main.py         # FastAPI app
+│   ├── requirements.txt    # Python dependencies
+│   └── Dockerfile          # Backend container
+├── frontend/               # React frontend
+│   ├── src/               # Source code
+│   │   ├── components/     # React components
+│   │   ├── features/       # Redux slices
+│   │   ├── services/       # API services
+│   │   └── App.js         # Main app component
+│   ├── package.json       # Node dependencies
+│   └── Dockerfile         # Frontend container
+├── docker-compose.yml     # Local development
+├── .github/workflows/     # CI/CD
+├── README.md             # Project overview
+├── DEVELOPMENT_PROCESS_REPORT.md  # Development process
+├── AI_PROMPT_LIBRARY.md  # AI prompt collection
+└── LEARNING_REFLECTION_REPORT.md  # Learning insights
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is developed as part of the AI Upskilling Assessment for Ideas2IT.
+
+---
+
+**Developed by**: Yuvasree Ganesan (I24132)  
+**Assessment Level**: L2  
+**Technology Stack**: FastAPI + React + PostgreSQL  
+**Deployment**: Vercel + Render 
