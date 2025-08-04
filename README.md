@@ -5,9 +5,9 @@ A modern, full-stack project management application built with FastAPI, React, a
 ## 📋 Application Deliverables
 
 ### ✅ Live Application URL
-- **Frontend**: [Deployed on Vercel] (To be added after deployment)
-- **Backend**: [Deployed on Render] (To be added after deployment)
-- **API Documentation**: [Backend URL]/docs
+- **Frontend**: https://project-management-dashboard-dno2.vercel.app/
+- **Backend**: https://projectmanagementdashboard.onrender.com
+- **API Documentation**: https://projectmanagementdashboard.onrender.com/docs
 
 ### ✅ GitHub Repository
 - **Repository**: Complete source code with clear documentation
